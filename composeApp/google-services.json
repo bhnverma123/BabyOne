@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1022334475474",
+    "project_id": "babyone-2ce98",
+    "storage_bucket": "babyone-2ce98.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1022334475474:android:6cd7d1910554d22f41610b",
+        "android_client_info": {
+          "package_name": "com.example.kmplearning"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2NzfuiEG4a2GcOSkcocCxb7oTripSlgE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

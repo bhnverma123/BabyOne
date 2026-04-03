@@ -7,27 +7,58 @@
 image: cimg/android:2024.01
 
 pipelines:
-  default:                # pipeline definition for all branches
-    - parallel:           # running a set of steps at the same time https://support.atlassian.com/bitbucket-cloud/docs/set-up-or-run-parallel-steps/
-        - step:           # step to build Android debug application
-            name: Android Debug Application
-            caches:       # caching speed up subsequent execution https://support.atlassian.com/bitbucket-cloud/docs/cache-dependencies/
+  develop: # pipeline definition for all branches
+    - parallel: # running a set of steps at the same time https://support.atlassian.com/bitbucket-cloud/docs/set-up-or-run-parallel-steps/
+        - step: # step to build Android debug application
+            name: Android Debug Application and Firebase App Distribution
+            caches: # caching speed up subsequent execution https://support.atlassian.com/bitbucket-cloud/docs/cache-dependencies/
               - gradle
             script:
+              - apt-get update && apt-get install -y curl
+              - curl -sL https://firebase.tools | bash
               - ./gradlew :composeApp:assembleDebug
+              - firebase appdistribution:distribute composeApp/build/outputs/apk/debug/composeApp-debug.apk
+              - --app 1:1022334475474:android:6cd7d1910554d22f41610b
+              - --testers "bhnverma@gmail.com"
+              - --release-notes "Automated distribution from Bitbucket Pipelines"
+              - --token "$FIREBASE_TOKEN"
             artifacts:
               - composeApp/build/outputs/**        # artifacts are files that are produced by a step https://support.atlassian.com/bitbucket-cloud/docs/use-artifacts-in-steps/
-        - step:           # step to run lint (Android code scanning tool)
+        - step: # step to run lint (Android code scanning tool)
             name: Lint
-            caches:       # caching speed up subsequent execution https://support.atlassian.com/bitbucket-cloud/docs/cache-dependencies/
+            caches: # caching speed up subsequent execution https://support.atlassian.com/bitbucket-cloud/docs/cache-dependencies/
               - gradle
             script:
               - ./gradlew :composeApp:lint
             artifacts:
               - composeApp/build/reports/**        # artifacts are files that are produced by a step https://support.atlassian.com/bitbucket-cloud/docs/use-artifacts-in-steps/
-        - step:           # step to run unit tests
+        - step: # step to run unit tests
             name: Unit Tests
             caches:
               - gradle    # caching speed up subsequent execution https://support.atlassian.com/bitbucket-cloud/docs/cache-dependencies/
             script:
-              - ./gradlew :composeApp:testDebugUnitTest
+              - ./gradlew :composeApp:testDebugUnitTestdevelop
+  production: # pipeline definition for production branch
+    - parallel: # running a set of steps at the same time https://support.atlassian.com/bitbucket-cloud/docs/set-up-or-run-parallel-steps/
+        - step: # step to build Android debug application
+            name: Android Release Application
+            caches: # caching speed up subsequent execution https://support.atlassian.com/bitbucket-cloud/docs/cache-dependencies/
+              - gradle
+            script:
+              - ./gradlew :composeApp:assembleRelease
+            artifacts:
+              - composeApp/build/outputs/**        # artifacts are files that are produced by a step https://support.atlassian.com/bitbucket-cloud/docs/use-artifacts-in-steps/
+        - step: # step to run lint (Android code scanning tool)
+            name: Lint
+            caches: # caching speed up subsequent execution https://support.atlassian.com/bitbucket-cloud/docs/cache-dependencies/
+              - gradle
+            script:
+              - ./gradlew :composeApp:lint
+            artifacts:
+              - composeApp/build/reports/**        # artifacts are files that are produced by a step https://support.atlassian.com/bitbucket-cloud/docs/use-artifacts-in-steps/
+        - step: # step to run unit tests
+            name: Unit Tests
+            caches:
+              - gradle    # caching speed up subsequent execution https://support.atlassian.com/bitbucket-cloud/docs/cache-dependencies/
+            script:
+              - ./gradlew :composeApp:testReleaseUnitTest
